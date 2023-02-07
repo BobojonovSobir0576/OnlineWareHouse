@@ -1,0 +1,86 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>
+      Остатка на склатьд 
+    </title>
+
+    <script src="{% static 'js/bootstrap.min.js' %}"></script> <!-- This is how to include a static file -->
+    <script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css" />
+  </head>
+  <body>
+    <div class="container">
+      {% block pagecontent %}
+
+      <h1 class="text-center">Сканер штрих-кода продукта</h1>     
+      <p class="text-center" style="color:red ">{{msg}}</p> 
+      <hr> 
+      <div>
+        <form method="post" action="">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="exampleInputEmail1" class="form-label">Штрих-код продукта</label>
+            <input type="text" class="form-control" name="barcode" id="firstField" aria-describedby="emailHelp">
+            <div id="emailHelp" class="form-text">Получите сканер штрих-кода и отсканируйте изображение штрих-кода продукта</div>
+          </div>
+          <button type="submit" class="btn btn-primary">Сканировать</button>
+        </form>
+      </div>
+      
+      <div class="mt-5">
+        <h1 class="text-center">Штрих-код отсканирован</h1>
+        
+        <table class="table" id="tblToExcl">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Название продукта</th>
+              <th scope="col">Штрих-код</th>
+              <th scope="col">Суммы</th>
+              <th scope="col">Остаток товара на складе</th>
+              <th scope="col">Количество продукта</th>
+              <th scope="col">Остаток</th>
+              <th scope="col">Склад</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in products %}
+            <tr>
+              <th scope="row">{{forloop.counter}}</th>
+              <td>{{i.name }}</td>
+              <td>{{ i.barcode }}</td>
+              <td>{{ i.sums }}</td>
+              <td>{{i.remain_product}}</td>
+              <td>{{ i.amount }}</td>
+              <td>{{ i.separate_amount }}</td>
+              <td>{{ i.warehouse }}</td>
+            </tr>
+           {% endfor %}
+            
+          </tbody>
+        </table>
+      </div>
+
+      {% endblock %}
+      <button id="button" class="btn btn-primary" onclick="htmlTableToExcel('xlsx')">Загрузить в файл Excel</button>
+    </div>
+    
+
+    <script>
+      function htmlTableToExcel(type){
+        var data = document.getElementById('tblToExcl');
+        var excelFile = XLSX.utils.table_to_book(data, {sheet: "sheet1"});
+        XLSX.write(excelFile, { bookType: type, bookSST: true, type: 'base64' });
+        XLSX.writeFile(excelFile, 'Остатка на склатьд .' + type);
+       }
+
+      window.onload = function(){
+          document.getElementById("firstField").focus();
+      }
+  </script>
+  </body>
+</html>
